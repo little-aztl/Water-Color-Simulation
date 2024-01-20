@@ -207,12 +207,22 @@ namespace VCX::Labs::WaterColor_Namespace {
         }
     }
 
-    void SetRGBA(Common::ImageRGB&canvas, int x, int y, glm::vec4 color) {
-        auto && proxy = canvas.At(x, y);
-        proxy         = glm::vec3(color) * color.a + static_cast<glm::vec3>(proxy) * (1.0f - color.a);
+    glm::vec3 BlendPigment(glm::vec3 c1, glm::vec3 c2, float t) {
+        float r, g, b;
+        //printf("%.2lf\n", t);
+        mixbox_lerp_float(c1.r, c1.g, c1.b, c2.r, c2.g, c2.b, 1 - t, &r, &g, &b);
+        return glm::vec3(r, g, b);
     }
 
-    void DrawFilledPolygen(std::list<glm::vec2> & vertices, Common::ImageRGB & canvas, glm::vec4 color) {
+    void SetRGBA(Common::ImageRGB&canvas, int x, int y, glm::vec4 color, bool pigment_mixing) {
+        auto && proxy = canvas.At(x, y);
+        if (! pigment_mixing)
+            proxy = glm::vec3(color) * color.a + static_cast<glm::vec3>(proxy) * (1.0f - color.a);
+        else
+            proxy = BlendPigment(color, static_cast<glm::vec3>(proxy), color.a);
+    }
+
+    void DrawFilledPolygen(std::list<glm::vec2> & vertices, Common::ImageRGB & canvas, glm::vec4 color, bool pigment_mixing) {
         std::vector<std::vector<Edge> > edges_list;
         edges_list.resize(canvas.GetSizeY() + 1);
         EdgesList(vertices, edges_list, canvas.GetSizeX(), canvas.GetSizeY());
@@ -231,7 +241,7 @@ namespace VCX::Labs::WaterColor_Namespace {
                 int j = i + 1;
                 int x1 = roundf(edges_list[y][i].x), x2 = roundf(edges_list[y][j].x);
                 for (int x = x1; x < x2; ++x) {
-                    SetRGBA(canvas, x, y, color);
+                    SetRGBA(canvas, x, y, color, pigment_mixing);
                 }
 
                 Edge new_edge = edges_list[y][i];

@@ -53,7 +53,7 @@ namespace VCX::Labs::WaterColor_Namespace {
          * 
          * \param layer ÐÂµÄÍ¼²ã
          */
-        void Merge(const Common::ImageRGB & layer);
+        //void Merge(const Common::ImageRGB & layer);
 
 
         bool Check_White(glm::vec3 c);

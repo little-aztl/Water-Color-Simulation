@@ -29,7 +29,6 @@ namespace VCX::Labs::WaterColor_Namespace {
         }
         ImGui::Checkbox("Pigment Mixing Simulation", &_pigmentMix);
         ImGui::SliderFloat("Radius", &_radius, 0, 0.5);
-        ImGui::SliderFloat("Blend Ratio", &_ratio, 0, 1);
         if (ImGui::ColorPicker3("Color", _temp_color)) {
             _color = glm::vec3(_temp_color[0], _temp_color[1], _temp_color[2]);
         }
@@ -45,54 +44,19 @@ namespace VCX::Labs::WaterColor_Namespace {
     void WaterColor_Case::DrawWaterColorBlob() {
         if (!_proxy.IsClicking()) return;
         if (! _proxy.IsHovering()) return;
-        Common::ImageRGB     layer(_canvas.GetSize());
-        layer.Fill(glm::vec3(1));
         std::list<glm::vec2> vertices;
         RegularPolygen(vertices, 10, _proxy.MousePos(), _radius);
         DeformPolygenMultipleTimes(vertices, 5, _radius / 3, 2);
         for (int lyer = 1; lyer <= 30; ++lyer) {
             auto cur_vert = vertices;
             DeformPolygenMultipleTimes(cur_vert, 4, _radius / 10, 4);
-            DrawFilledPolygen(cur_vert, layer, glm::vec4(_color, 0.04));
+            DrawFilledPolygen(cur_vert, _canvas, glm::vec4(_color, 0.04), _pigmentMix);
         }
-        Merge(layer);
     }
 
     bool WaterColor_Case::Check_White(glm::vec3 c) {
         return c.r > 1 - eps && c.b > 1 - eps && c.g > 1 - eps;
     }
-
-    void WaterColor_Case::Merge(const Common::ImageRGB& layer) {
-        
-        for (int x = 0; x < _canvas.GetSizeX(); ++x) {
-            for (int y = 0; y < _canvas.GetSizeY(); ++y) {
-                auto && proxy = _canvas.At(x, y);
-                glm::vec3 cur_color = layer.At(x, y), ori_color = _canvas.At(x, y);
-                if (Check_White(cur_color)) {
-                    continue;
-                }
-                if (Check_White(ori_color)) {
-                    proxy = cur_color;
-                    continue;
-                }
-                if (!_pigmentMix) {
-                    proxy = _ratio * cur_color + (1 - _ratio) * ori_color;
-                } else {
-                    float r, g, b;
-                    mixbox_lerp_float(
-                        cur_color[0], cur_color[1], cur_color[2], 
-                        ori_color[0], ori_color[1], ori_color[2], 
-                        _ratio, 
-                        &r, &g, &b
-                    );
-                    proxy = glm::vec3(r, g, b);
-                }
-            }
-        }
-        
-    }
-
-    
     Common::CaseRenderResult WaterColor_Case::OnRender(
         std::pair<std::uint32_t, std::uint32_t> const desiredSize
     ) {

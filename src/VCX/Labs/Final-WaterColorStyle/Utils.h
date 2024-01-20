@@ -89,7 +89,7 @@ namespace VCX::Labs::WaterColor_Namespace {
      * \param y ×Ý×ø±ê
      * \param color RGBAÑÕÉ«
      */
-    void SetRGBA(Common::ImageRGB & canvas, int x, int y, glm::vec4 color);
+    void SetRGBA(Common::ImageRGB & canvas, int x, int y, glm::vec4 color, bool pigment_mixing);
 
     struct Edge {
         float x, dx;
@@ -111,7 +111,7 @@ namespace VCX::Labs::WaterColor_Namespace {
         int sy
     );
 
-    void DrawFilledPolygen(std::list<glm::vec2> & vertices, Common::ImageRGB & canvas, glm::vec4 color);
+    void DrawFilledPolygen(std::list<glm::vec2> & vertices, Common::ImageRGB & canvas, glm::vec4 color, bool pigment_mixing);
 
     glm::vec2 RandomlyModifyVertex(glm::vec2 p, std::uniform_real_distribution<float> & uni_distr, std::normal_distribution<float> & norm_distr);
 
